@@ -11,6 +11,8 @@ let currentModule = 0;
 
 let triangleCount = 0;
 
+let hud;
+
 function nextRandom(x) {
 
   x = (Math.imul(1103515245, x) + 12345) & 0x7fffffff; //السطر هاد هاي من تشات كان عندي اشكال حمرة ب مكان عشوائي حكالي حط هاي بدالها بزبط
@@ -23,7 +25,10 @@ let x = seed; //random
 
 function setup() {
 
-  createCanvas(400, 400);
+  createCanvas(400, 400, WEBGL);
+
+  //2D layer for text
+  hud = createGraphics(400, 400);
 
   for (let i = 0; i < p; i++) {
 
@@ -103,39 +108,54 @@ function draw() {
 
   background(220);
 
+  hud.clear();
+
+  //return old 2D origin for Menu and Modules 1-3
+  if (currentModule != 4) {
+
+    camera();
+
+    perspective();
+
+    translate(-width / 2, -height / 2);
+
+  }
+
   //Menu
   if (currentModule == 0) {
 
-    fill(0);
+    hud.fill(0);
 
-    textAlign(LEFT, TOP);
+    hud.textAlign(LEFT, TOP);
 
-    textSize(22);
+    hud.textSize(22);
 
-    text("SceneForge Menu", 30, 30);
+    hud.text("SceneForge Menu", 30, 30);
 
-    textSize(16);
+    hud.textSize(16);
 
-    text("1 - Shapes & Colour", 30, 80);
+    hud.text("1 - Shapes & Colour", 30, 80);
 
-    text("2 - Sierpinski", 30, 110);
+    hud.text("2 - Sierpinski", 30, 110);
 
-    text("3 - Transformations", 30, 140);
+    hud.text("3 - Transformations", 30, 140);
 
-    text("4 - 3D Camera", 30, 170);
+    hud.text("4 - 3D Camera", 30, 170);
 
-    text("5 - Measure & Compare", 30, 200);
+    hud.text("5 - Measure & Compare", 30, 200);
 
-    textSize(14);
+    hud.textSize(14);
 
-    text("Seed: " + seed, 30, 250);
+    hud.text("Seed: " + seed, 30, 250);
 
-    text("n: " + n + "  p: " + p + "  d: " + d, 30, 275);
+    hud.text("n: " + n + "  p: " + p + "  d: " + d, 30, 275);
 
   }
 
   //Module 1
   else if (currentModule == 1) {
+
+    rectMode(CORNER);
 
     noStroke();
 
@@ -175,19 +195,19 @@ function draw() {
 
     }
 
-    fill(0);
+    hud.fill(0);
 
-    textSize(16);
+    hud.textSize(16);
 
-    textAlign(LEFT, TOP);
+    hud.textAlign(LEFT, TOP);
 
-    text("Seed: " + seed, 10, 10);
+    hud.text("Seed: " + seed, 10, 10);
 
-    text("n: " + n, 10, 30);
+    hud.text("n: " + n, 10, 30);
 
-    text("p: " + p, 10, 50);
+    hud.text("p: " + p, 10, 50);
 
-    text("d: " + d, 10, 70);
+    hud.text("d: " + d, 10, 70);
 
   }
 
@@ -212,21 +232,19 @@ function draw() {
 
     );
 
-    noStroke();
+    hud.fill(0);
 
-    fill(0);
+    hud.textSize(20);
 
-    textSize(20);
+    hud.textAlign(LEFT, TOP);
 
-    textAlign(LEFT, TOP);
+    hud.text("Sierpinski", 10, 10);
 
-    text("Sierpinski", 10, 10);
+    hud.textSize(16);
 
-    textSize(16);
+    hud.text("Depth: " + d, 10, 35);
 
-    text("Depth: " + d, 10, 35);
-
-    text("Triangles: " + triangleCount, 10, 55);
+    hud.text("Triangles: " + triangleCount, 10, 55);
 
   }
 
@@ -332,34 +350,246 @@ function draw() {
 
     }
 
-    fill(0);
+    hud.fill(0);
 
-    textSize(20);
+    hud.textSize(20);
 
-    textAlign(LEFT, TOP);
+    hud.textAlign(LEFT, TOP);
 
-    text("Transformations", 10, 10);
+    hud.text("Transformations", 10, 10);
 
-    textSize(14);
+    hud.textSize(14);
 
-    text("Translate -> Rotate -> Scale", 10, 35);
+    hud.text("Translate -> Rotate -> Scale", 10, 35);
 
-    text("Hold the mouse button to see the order change", 10, 55);
+    hud.text("Hold the mouse button to see the order change", 10, 55);
+
+  }
+
+  //Module 4
+  else if (currentModule == 4) {
+
+    //Bonus: orbit camera with sin and cos
+    let cameraAngle = frameCount * 0.01;
+
+    let eyeX = cos(cameraAngle) * 500;
+
+    let eyeY = 200;
+
+    let eyeZ = sin(cameraAngle) * 500;
+
+    //camera: eye,target,up
+    camera(
+
+      eyeX,
+      eyeY,
+      eyeZ,
+
+      0,
+      0,
+      0,
+
+      0,
+      1,
+      0
+
+    );
+
+    //Perspective view
+    if (!mouseIsPressed) {
+
+      perspective(
+
+        PI / 3,
+
+        width / height,
+
+        1,
+
+        2000
+
+      );
+
+    }
+
+    //Orthographic view
+    else {
+
+      ortho(
+
+        -250,
+
+        250,
+
+        -250,
+
+        250,
+
+        1,
+
+        2000
+
+      );
+
+    }
+
+    //lights for the 3D scene
+    ambientLight(120);
+
+    directionalLight(
+
+      255,
+      255,
+      255,
+
+      -1,
+      1,
+      -1
+
+    );
+
+    //draw the same seeded scene with depth
+    let depthX = seed;
+
+    for (let i = 0; i < shapes.length; i++) {
+
+      let s = shapes[i];
+
+      depthX = nextRandom(depthX);
+
+      //random depth from the seed
+      let z = -150 + (depthX % 301);
+
+      push();
+
+      //WEBGL origin is in the centre
+      translate(
+
+        s.x - width / 2,
+
+        s.y - height / 2,
+
+        z
+
+      );
+
+      noStroke();
+
+      ambientMaterial(palette[s.colorNumber]);
+
+      if (s.shape == "rectangle") {
+
+        box(
+
+          s.size,
+
+          s.size,
+
+          30
+
+        );
+
+      } else if (s.shape == "circle") {
+
+        sphere(
+
+          s.size / 2
+
+        );
+
+      } else if (s.shape == "triangle") {
+
+        cone(
+
+          s.size / 2,
+
+          s.size
+
+        );
+
+      }
+
+      pop();
+
+    }
+
+    hud.fill(0);
+
+    hud.textSize(20);
+
+    hud.textAlign(LEFT, TOP);
+
+    hud.text("3D Camera", 10, 10);
+
+    hud.textSize(14);
+
+    if (!mouseIsPressed) {
+
+      hud.text("Perspective View", 10, 35);
+
+      hud.text("Far objects look smaller", 10, 55);
+
+      hud.text("Hold the mouse for Orthographic View", 10, 75);
+
+    } else {
+
+      hud.text("Orthographic View", 10, 35);
+
+      hud.text("Far objects stay the same size", 10, 55);
+
+      hud.text("Release the mouse for Perspective View", 10, 75);
+
+    }
+
+    hud.text("Bonus: camera orbit with sin() and cos()", 10, 95);
 
   }
 
   //Modules the left ones
   else {
 
-    fill(0);
+    hud.fill(0);
 
-    textSize(20);
+    hud.textSize(20);
 
-    textAlign(CENTER, CENTER);
+    hud.textAlign(CENTER, CENTER);
 
-    text("Not implemented yet", width / 2, height / 2);
+    hud.text("Not implemented yet", width / 2, height / 2);
 
   }
+
+  //show 2D text over WEBGL
+  camera();
+
+  ortho(
+
+    -width / 2,
+
+    width / 2,
+
+    -height / 2,
+
+    height / 2,
+
+    -1000,
+
+    1000
+
+  );
+
+  resetMatrix();
+
+  imageMode(CORNER);
+
+  image(
+
+    hud,
+
+    -width / 2,
+
+    -height / 2
+
+  );
 
 }
 
@@ -401,7 +631,18 @@ function sierpinski(x1, y1, x2, y2, x3, y3, depth, level) {
 
     );
 
-    triangle(x1, y1, x2, y2, x3, y3);
+    triangle(
+
+      x1,
+      y1,
+
+      x2,
+      y2,
+
+      x3,
+      y3
+
+    );
 
     triangleCount++;
 
@@ -427,11 +668,14 @@ function sierpinski(x1, y1, x2, y2, x3, y3, depth, level) {
   //first small triangle
   sierpinski(
 
-    x1, y1,
+    x1,
+    y1,
 
-    midABx, midABy,
+    midABx,
+    midABy,
 
-    midACx, midACy,
+    midACx,
+    midACy,
 
     depth - 1,
 
@@ -442,11 +686,14 @@ function sierpinski(x1, y1, x2, y2, x3, y3, depth, level) {
   //second small triangle
   sierpinski(
 
-    midABx, midABy,
+    midABx,
+    midABy,
 
-    x2, y2,
+    x2,
+    y2,
 
-    midBCx, midBCy,
+    midBCx,
+    midBCy,
 
     depth - 1,
 
@@ -457,11 +704,14 @@ function sierpinski(x1, y1, x2, y2, x3, y3, depth, level) {
   //third small triangle
   sierpinski(
 
-    midACx, midACy,
+    midACx,
+    midACy,
 
-    midBCx, midBCy,
+    midBCx,
+    midBCy,
 
-    x3, y3,
+    x3,
+    y3,
 
     depth - 1,
 
@@ -498,4 +748,5 @@ function keyPressed() {
     currentModule = 0;
 
   }
+
 }
